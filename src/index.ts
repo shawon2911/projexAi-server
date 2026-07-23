@@ -44,24 +44,24 @@ app.get('/api/auth/get-session', (req, res) => {
 // -------------------------------------------------------------
 // HARD FIXED DATABASE CONNECTION TO "veloAgent"
 // -------------------------------------------------------------
-let mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/veloAgent';
+let mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/projexAi';
 
 // Ensure URL points specifically to veloAgent DB instead of default/test
 if (mongoUri.includes('mongodb.net/?')) {
-  mongoUri = mongoUri.replace('mongodb.net/?', 'mongodb.net/veloAgent?');
+  mongoUri = mongoUri.replace('mongodb.net/?', 'mongodb.net/projexAi?');
 } else if (mongoUri.includes('mongodb.net/test?')) {
-  mongoUri = mongoUri.replace('mongodb.net/test?', 'mongodb.net/veloAgent?');
+  mongoUri = mongoUri.replace('mongodb.net/test?', 'mongodb.net/projexAi?');
 } else if (mongoUri.includes('mongodb.net/swarmgrid?')) {
-  mongoUri = mongoUri.replace('mongodb.net/swarmgrid?', 'mongodb.net/veloAgent?');
+  mongoUri = mongoUri.replace('mongodb.net/swarmgrid?', 'mongodb.net/projexAi?');
 }
 
 console.log("Connecting directly to database target...");
 
 mongoose.connect(mongoUri, {
-  dbName: 'veloAgent' // Force database name
+  dbName: 'projexAi' // Force database name
 })
   .then(() => {
-    console.log('✅ Connected successfully! Target DB: veloAgent');
+    console.log('✅ Connected successfully! Target DB: projexAi');
     
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
