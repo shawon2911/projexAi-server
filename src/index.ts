@@ -7,11 +7,11 @@ import dns from 'dns';
 
 // Import Routes
 import authRoutes from './routes/authRoutes.js';
+dotenv.config();
 
 // DNS Fixes for Cloud MongoDB
 dns.setDefaultResultOrder("ipv4first");
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
