@@ -1,12 +1,12 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-import dns from "dns";
+import dns from 'dns';
 
 // Import Routes
-const authRoutes = require('./routes/authRoutes.js');
+import authRoutes from './routes/authRoutes.js';
 
 // DNS Fixes for Cloud MongoDB
 dns.setDefaultResultOrder("ipv4first");
@@ -26,7 +26,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Health Check Route
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (req: Request, res: Response) => {
   res.json({ 
     status: 'Server is running', 
     timestamp: new Date().toISOString() 
@@ -37,42 +37,42 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 
 // Fallback for session checks
-app.get('/api/auth/get-session', (req, res) => {
+app.get('/api/auth/get-session', (req: Request, res: Response) => {
   res.status(200).json({ user: null, session: null });
 });
 
 // -------------------------------------------------------------
 // HARD FIXED DATABASE CONNECTION TO "veloAgent"
 // -------------------------------------------------------------
-let mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/projexAi';
+let mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/veloAgent';
 
 // Ensure URL points specifically to veloAgent DB instead of default/test
 if (mongoUri.includes('mongodb.net/?')) {
-  mongoUri = mongoUri.replace('mongodb.net/?', 'mongodb.net/projexAi?');
+  mongoUri = mongoUri.replace('mongodb.net/?', 'mongodb.net/veloAgent?');
 } else if (mongoUri.includes('mongodb.net/test?')) {
-  mongoUri = mongoUri.replace('mongodb.net/test?', 'mongodb.net/projexAi?');
+  mongoUri = mongoUri.replace('mongodb.net/test?', 'mongodb.net/veloAgent?');
 } else if (mongoUri.includes('mongodb.net/swarmgrid?')) {
-  mongoUri = mongoUri.replace('mongodb.net/swarmgrid?', 'mongodb.net/projexAi?');
+  mongoUri = mongoUri.replace('mongodb.net/swarmgrid?', 'mongodb.net/veloAgent?');
 }
 
 console.log("Connecting directly to database target...");
 
 mongoose.connect(mongoUri, {
-  dbName: 'projexAi' // Force database name
+  dbName: 'veloAgent' // Force database name
 })
   .then(() => {
-    console.log('✅ Connected successfully! Target DB: projexAi');
+    console.log('✅ Connected successfully! Target DB: veloAgent');
     
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
   })
-  .catch(err => {
+  .catch((err: unknown) => {
     console.error('❌ MongoDB Connection Error:', err);
     process.exit(1);
   });
 
-process.on('unhandledRejection', (err) => {
+process.on('unhandledRejection', (err: unknown) => {
   console.error('Unhandled Rejection:', err);
   process.exit(1);
 });

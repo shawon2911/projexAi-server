@@ -10,7 +10,7 @@ const helmet_1 = __importDefault(require("helmet"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const dns_1 = __importDefault(require("dns"));
 // Import Routes
-const authRoutes = require('./routes/authRoutes.js');
+const authRoutes_js_1 = __importDefault(require("./routes/authRoutes.js"));
 // DNS Fixes for Cloud MongoDB
 dns_1.default.setDefaultResultOrder("ipv4first");
 dns_1.default.setServers(["8.8.8.8", "8.8.4.4"]);
@@ -33,7 +33,7 @@ app.get('/api/health', (req, res) => {
     });
 });
 // Auth Routes Mounting
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes_js_1.default);
 // Fallback for session checks
 app.get('/api/auth/get-session', (req, res) => {
     res.status(200).json({ user: null, session: null });
@@ -41,28 +41,28 @@ app.get('/api/auth/get-session', (req, res) => {
 // -------------------------------------------------------------
 // HARD FIXED DATABASE CONNECTION TO "veloAgent"
 // -------------------------------------------------------------
-let mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/projexAi';
+let mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/veloAgent';
 // Ensure URL points specifically to veloAgent DB instead of default/test
 if (mongoUri.includes('mongodb.net/?')) {
-    mongoUri = mongoUri.replace('mongodb.net/?', 'mongodb.net/projexAi?');
+    mongoUri = mongoUri.replace('mongodb.net/?', 'mongodb.net/veloAgent?');
 }
 else if (mongoUri.includes('mongodb.net/test?')) {
-    mongoUri = mongoUri.replace('mongodb.net/test?', 'mongodb.net/projexAi?');
+    mongoUri = mongoUri.replace('mongodb.net/test?', 'mongodb.net/veloAgent?');
 }
 else if (mongoUri.includes('mongodb.net/swarmgrid?')) {
-    mongoUri = mongoUri.replace('mongodb.net/swarmgrid?', 'mongodb.net/projexAi?');
+    mongoUri = mongoUri.replace('mongodb.net/swarmgrid?', 'mongodb.net/veloAgent?');
 }
 console.log("Connecting directly to database target...");
 mongoose_1.default.connect(mongoUri, {
-    dbName: 'projexAi' // Force database name
+    dbName: 'veloAgent' // Force database name
 })
     .then(() => {
-    console.log('✅ Connected successfully! Target DB: projexAi');
+    console.log('✅ Connected successfully! Target DB: veloAgent');
     app.listen(PORT, () => {
         console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
 })
-    .catch(err => {
+    .catch((err) => {
     console.error('❌ MongoDB Connection Error:', err);
     process.exit(1);
 });
