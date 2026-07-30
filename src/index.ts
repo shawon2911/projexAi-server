@@ -10,6 +10,7 @@ dotenv.config();
 import authRoutes from './routes/authRoutes';
 import projectRoutes from './routes/projectRoutes'; 
 import aiRoutes from './routes/aiRoutes';
+import bidRoutes from './routes/bidRoutes';
 
 
 // DNS Fixes for Cloud MongoDB
@@ -39,7 +40,8 @@ app.get('/api/health', (req: Request, res: Response) => {
 // Routes Mounting
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
-app.use('/api/ai', aiRoutes); 
+app.use('/api/ai', aiRoutes);
+app.use('/api/bids', bidRoutes); 
 
 // Fallback for session checks
 app.get('/api/auth/get-session', (req: Request, res: Response) => {
