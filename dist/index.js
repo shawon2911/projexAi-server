@@ -9,10 +9,12 @@ const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const dns_1 = __importDefault(require("dns"));
+dotenv_1.default.config();
 // Import Routes
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
-const projectRoutes_1 = __importDefault(require("./routes/projectRoutes")); // 👈 প্রজেক্ট রাউট ইমপোর্ট করা হয়েছে
-dotenv_1.default.config();
+const projectRoutes_1 = __importDefault(require("./routes/projectRoutes"));
+const aiRoutes_1 = __importDefault(require("./routes/aiRoutes"));
+const bidRoutes_1 = __importDefault(require("./routes/bidRoutes"));
 // DNS Fixes for Cloud MongoDB
 dns_1.default.setDefaultResultOrder("ipv4first");
 dns_1.default.setServers(["8.8.8.8", "8.8.4.4"]);
@@ -35,7 +37,9 @@ app.get('/api/health', (req, res) => {
 });
 // Routes Mounting
 app.use('/api/auth', authRoutes_1.default);
-app.use('/api/projects', projectRoutes_1.default); // 👈 প্রজেক্ট রাউট মাউন্ট করা হয়েছে
+app.use('/api/projects', projectRoutes_1.default);
+app.use('/api/ai', aiRoutes_1.default);
+app.use('/api/bids', bidRoutes_1.default);
 // Fallback for session checks
 app.get('/api/auth/get-session', (req, res) => {
     res.status(200).json({ user: null, session: null });
