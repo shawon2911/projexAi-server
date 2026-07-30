@@ -5,11 +5,12 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import dns from 'dns';
 
+dotenv.config();
 // Import Routes
 import authRoutes from './routes/authRoutes';
-import projectRoutes from './routes/projectRoutes'; // 👈 প্রজেক্ট রাউট ইমপোর্ট করা হয়েছে
+import projectRoutes from './routes/projectRoutes'; 
+import aiRoutes from './routes/aiRoutes';
 
-dotenv.config();
 
 // DNS Fixes for Cloud MongoDB
 dns.setDefaultResultOrder("ipv4first");
@@ -37,7 +38,8 @@ app.get('/api/health', (req: Request, res: Response) => {
 
 // Routes Mounting
 app.use('/api/auth', authRoutes);
-app.use('/api/projects', projectRoutes); // 👈 প্রজেক্ট রাউট মাউন্ট করা হয়েছে
+app.use('/api/projects', projectRoutes);
+app.use('/api/ai', aiRoutes); 
 
 // Fallback for session checks
 app.get('/api/auth/get-session', (req: Request, res: Response) => {

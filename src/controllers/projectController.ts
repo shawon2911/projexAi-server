@@ -1,59 +1,135 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middleware/authMiddleware';
+import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import Project from '../models/Project';
 
-// Create a new Project (Protected)
-export const createProject = async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const { title, description, shortDescription, category, budget, skills } = req.body;
+interface AuthenticatedRequest extends Request {
+  user?: any;
+}
 
-    if (!title || !description || !category || !budget) {
-      res.status(400).json({ message: 'Please provide all required fields' });
+// 1. Create a New Project
+export const createProject = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    // Role Check
+    if (req.user && req.user.role !== 'client') {
+      res.status(403).json({ 
+        success: false,
+        message: 'Access denied. Only clients can post new projects.' 
+      });
       return;
     }
 
-    const project = new Project({
+    // User ID Extractor
+    const userId = req.user?._id || req.user?.id || req.user;
+
+    if (!userId) {
+      res.status(401).json({ 
+        success: false, 
+        message: 'User authorization failed. Please log in again.' 
+      });
+      return;
+    }
+
+    const {
       title,
-      description,
-      shortDescription: shortDescription || description.substring(0, 150) + '...',
       category,
+      shortDescription,
+      description,
+      fullDescription,
       budget,
-      skills: Array.isArray(skills) ? skills : skills.split(',').map((s: string) => s.trim()),
-      createdBy: req.user?.id
+      deadline,
+      skills,
+      tags,
+      requirements,
+    } = req.body;
+
+    const finalDescription = description || fullDescription || shortDescription || '';
+
+    if (!title || !finalDescription || !budget || !deadline) {
+      res.status(400).json({ 
+        success: false, 
+        message: 'Please provide title, description, budget, and deadline.' 
+      });
+      return;
+    }
+
+    const processedSkills = Array.isArray(skills)
+      ? skills
+      : typeof skills === 'string'
+      ? skills.split(',').map((s) => s.trim()).filter(Boolean)
+      : [];
+
+    const processedTags = Array.isArray(tags)
+      ? tags
+      : typeof tags === 'string'
+      ? tags.split(',').map((t) => t.trim()).filter(Boolean)
+      : [];
+
+    const processedRequirements = Array.isArray(requirements)
+      ? requirements
+      : typeof requirements === 'string'
+      ? requirements.split(',').map((r) => r.trim()).filter(Boolean)
+      : [];
+
+    // Save to Database with createdBy field
+    const newProject = new Project({
+      createdBy: new mongoose.Types.ObjectId(userId),
+      user: userId,
+      client: userId,
+      title,
+      category: category || 'Web Development',
+      shortDescription: shortDescription || '',
+      description: finalDescription,
+      fullDescription: finalDescription,
+      budget: Number(budget),
+      deadline: new Date(deadline),
+      skills: processedSkills,
+      tags: processedTags,
+      requirements: processedRequirements,
+      status: 'open',
     });
 
-    await project.save();
-    res.status(201).json({ message: 'Project created successfully', project });
-  } catch (error) {
-    console.error('Error creating project:', error);
-    res.status(500).json({ message: 'Server error while creating project' });
+    const savedProject = await newProject.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Project created successfully',
+      project: savedProject,
+    });
+  } catch (error: any) {
+    console.error('SERVER ERROR IN CREATE PROJECT:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while creating project',
+      error: error?.message || 'Unknown error',
+    });
   }
 };
 
-// Get All Projects with Search & Filtering (Public)
-export const getProjects = async (req: AuthRequest, res: Response): Promise<void> => {
+// 2. Get All Projects (missing function fixed here)
+export const getProjects = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { search, category } = req.query;
-    const query: any = {};
+    const projects = await Project.find().sort({ createdAt: -1 });
+    res.status(200).json(projects);
+  } catch (error: any) {
+    console.error('SERVER ERROR IN GET PROJECTS:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching projects',
+      error: error?.message,
+    });
+  }
+};
 
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
-      ];
+// 3. Get Single Project by ID
+export const getProjectById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) {
+      res.status(404).json({ message: 'Project not found' });
+      return;
     }
-
-    if (category && category !== 'All') {
-      query.category = category;
-    }
-
-    const projects = await Project.find(query)
-      .populate('createdBy', 'name email role')
-      .sort({ createdAt: -1 });
-
-    res.status(200).json({ count: projects.length, projects });
-  } catch (error) {
-    console.error('Error fetching projects:', error);
-    res.status(500).json({ message: 'Server error while fetching projects' });
+    res.status(200).json(project);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Server error', error: error?.message });
   }
 };
