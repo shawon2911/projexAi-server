@@ -10,11 +10,12 @@ const helmet_1 = __importDefault(require("helmet"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const dns_1 = __importDefault(require("dns"));
 // Import Routes
-const authRoutes_js_1 = __importDefault(require("./routes/authRoutes.js"));
+const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
+const projectRoutes_1 = __importDefault(require("./routes/projectRoutes")); // 👈 প্রজেক্ট রাউট ইমপোর্ট করা হয়েছে
+dotenv_1.default.config();
 // DNS Fixes for Cloud MongoDB
 dns_1.default.setDefaultResultOrder("ipv4first");
 dns_1.default.setServers(["8.8.8.8", "8.8.4.4"]);
-dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
 // Middlewares
@@ -32,32 +33,30 @@ app.get('/api/health', (req, res) => {
         timestamp: new Date().toISOString()
     });
 });
-// Auth Routes Mounting
-app.use('/api/auth', authRoutes_js_1.default);
+// Routes Mounting
+app.use('/api/auth', authRoutes_1.default);
+app.use('/api/projects', projectRoutes_1.default); // 👈 প্রজেক্ট রাউট মাউন্ট করা হয়েছে
 // Fallback for session checks
 app.get('/api/auth/get-session', (req, res) => {
     res.status(200).json({ user: null, session: null });
 });
-// -------------------------------------------------------------
-// HARD FIXED DATABASE CONNECTION TO "veloAgent"
-// -------------------------------------------------------------
 let mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/veloAgent';
 // Ensure URL points specifically to veloAgent DB instead of default/test
 if (mongoUri.includes('mongodb.net/?')) {
-    mongoUri = mongoUri.replace('mongodb.net/?', 'mongodb.net/veloAgent?');
+    mongoUri = mongoUri.replace('mongodb.net/?', 'mongodb.net/projexAi?');
 }
 else if (mongoUri.includes('mongodb.net/test?')) {
-    mongoUri = mongoUri.replace('mongodb.net/test?', 'mongodb.net/veloAgent?');
+    mongoUri = mongoUri.replace('mongodb.net/test?', 'mongodb.net/projexAi?');
 }
 else if (mongoUri.includes('mongodb.net/swarmgrid?')) {
-    mongoUri = mongoUri.replace('mongodb.net/swarmgrid?', 'mongodb.net/veloAgent?');
+    mongoUri = mongoUri.replace('mongodb.net/swarmgrid?', 'mongodb.net/projexAi?');
 }
 console.log("Connecting directly to database target...");
 mongoose_1.default.connect(mongoUri, {
-    dbName: 'veloAgent' // Force database name
+    dbName: 'projexAi' // Force database name
 })
     .then(() => {
-    console.log('✅ Connected successfully! Target DB: veloAgent');
+    console.log('✅ Connected successfully! Target DB: projexAi');
     app.listen(PORT, () => {
         console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
